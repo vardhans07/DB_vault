@@ -1,0 +1,130 @@
+#check path
+
+ls -l /etc/postgresql/16/main/
+
+# To enable WAL archiving or PITR:
+sudo nano /etc/postgresql/16/main/postgresql.conf
+
+#Add:
+
+wal_level = replica
+archive_mode = on
+archive_command = 'cp %p /var/lib/postgresql/16/archive/%f'
+
+#Restart PostgreSQL so the new setting takes effect:
+
+sudo systemctl restart postgresql
+
+#Then:
+
+sudo mkdir -p /var/lib/postgresql/16/archive
+sudo chown postgres:postgres /var/lib/postgresql/16/archive
+sudo systemctl restart postgresql
+
+# if Force a WAL switch to test archiving :                            #if require then use it this cmd
+
+sudo -u postgres psql -c "SELECT pg_switch_wal();"
+ls -l /var/lib/postgresql/16/archive
+
+
+
+>>>Take a base backup
+
+#Create a basebackup directory :
+
+sudo -u postgres mkdir -p /var/lib/postgresql/16/basebackup
+
+# Run base backup (plain format, includes WAL):
+
+sudo -u postgres pg_basebackup -D /var/lib/postgresql/16/basebackup -Fp -Xs -P
+
+>> Make changes, then simulate an “accidental” delete :
+
+#Connect to demo and add a new row
+
+sudo -u postgres psql
+\c demo
+
+INSERT INTO employees (name, role) VALUES ('David', 'Intern');
+
+SELECT * FROM employees;
+
+#Note the current time (for recovery target)
+
+SELECT now();
+
+#Simulate the mistaken delete :
+
+DELETE FROM employees WHERE name = 'Alice';
+
+SELECT * FROM employees;
+
+\q
+
+
+>> Prepare the recovery target configuration :
+
+#Ensure restore_command is set (already added earlier) :
+
+sudo grep -n "restore_command" /etc/postgresql/16/main/postgresql.conf
+
+#It should be:
+restore_command = 'cp /var/lib/postgresql/16/archive/%f %p'
+
+#Choose the recovery target time
+
+sudo sed -i '$a recovery_target_time = '\''2025-11-27 12:49:30'\''' /etc/postgresql/16/main/postgresql.conf
+sudo sed -i '$a recovery_target_action = '\''promote'\''' /etc/postgresql/16/main/postgresql.conf
+sudo sed -i '$a recovery_target_timeline = '\''latest'\''' /etc/postgresql/16/main/postgresql.conf
+
+
+>> Stop the server and restore the base backup
+
+#Stop PostgreSQL :
+
+sudo systemctl stop postgresql
+
+#Move current data directory aside (safety) :
+
+sudo mv /var/lib/postgresql/16/main /var/lib/postgresql/16/main_old
+
+#Restore basebackup to the data directory :
+
+sudo cp -a /var/lib/postgresql/16/basebackup /var/lib/postgresql/16/main
+sudo chown -R postgres:postgres /var/lib/postgresql/16/main
+
+#Create the recovery signal file :
+
+sudo -u postgres touch /var/lib/postgresql/16/main/recovery.signal
+
+
+>> Start PostgreSQL and let it replay to the target :
+
+# Start PostgreSQL :
+
+sudo systemctl start postgresql
+
+#Watch logs for recovery progress :
+
+sudo tail -f /var/log/postgresql/postgresql-16-main.log
+
+>> Verify the PITR result:
+
+#Check your data state :
+
+sudo -u postgres psql
+\c demo
+SELECT * FROM employees;
+
+
+>>Cleanup (optional) :
+
+#Remove recovery.signal if still present (Postgres should remove it after promote, but confirm):
+
+sudo rm -f /var/lib/postgresql/16/main/recovery.signal
+
+#Remove old data dir once you’re confident: 
+
+sudo rm -rf /var/lib/postgresql/16/main_old
+
+
