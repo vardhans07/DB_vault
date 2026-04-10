@@ -1,12 +1,12 @@
 
-##🛠 Step 1: Launch SQL*Plus
+🛠 Step 1: Launch SQL*Plus
 ====================================================
 
 ```bash
 
 $ sqlplus system/password@ORCL
 ```
-##You’ll get the SQL> prompt inside SQL*Plus.
+You’ll get the SQL> prompt inside SQL*Plus.
 
 
 ##🛠 Step 2: Run @ac
