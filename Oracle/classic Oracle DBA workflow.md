@@ -85,9 +85,10 @@ SQL_ID        SQL_TEXT                          EXECUTIONS ELAPSED_TIME
 
 $ sqlplus system/password@ORCL
 ====================================================
-SQL> @ac      → shows active sessions
-SQL> DEF      → shows defined variables
-SQL> @sql_id  → shows details of a query by SQL_ID
+
+# SQL> @ac      → shows active sessions
+# SQL> DEF      → shows defined variables
+# SQL> @sql_id  → shows details of a query by SQL_ID
 
 
 
