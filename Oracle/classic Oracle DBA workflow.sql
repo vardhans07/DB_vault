@@ -13,15 +13,16 @@ $ sqlplus system/password@ORCL
 ```bash
 SQL> @ac
 ```
---This runs the script file ac.sql.
---Typically, DBAs name ac.sql as “Active Sessions” script.
---Inside it, you might see queries like:
+#This runs the script file ac.sql.
+#Typically, DBAs name ac.sql as “Active Sessions” script.
+#Inside it, you might see queries like:
 
+```bash
 SQL>  SELECT sid, serial#, username, status, sql_id
       FROM v$session
       WHERE username IS NOT NULL;
-
---Output example:
+```
+#Output example:
 
 SID  SERIAL#  USERNAME   STATUS   SQL_ID
 ---  -------  --------   ------   ----------
@@ -30,12 +31,13 @@ SID  SERIAL#  USERNAME   STATUS   SQL_ID
 
 
 
---🛠 Step 3: Run DEF
+#🛠 Step 3: Run DEF
 
+```bash
 SQL> DEF
-
---This shows all defined substitution variables in SQL*Plus.
---Example output:
+```
+#This shows all defined substitution variables in SQL*Plus.
+#Example output:
 
 DEFINE _DATE           = "10-APR-26"
 DEFINE _USER           = "SYSTEM"
@@ -43,32 +45,35 @@ DEFINE _CONNECT_IDENTIFIER = "ORCL"
 
 
 
---🛠 Step 4: Run @sql_id
+#🛠 Step 4: Run @sql_id
 
+```bash
 SQL> @sql_id
+```
+#This runs a script (often named sql_id.sql) that takes a SQL_ID and shows details.
+#Inside, it might query:
 
---This runs a script (often named sql_id.sql) that takes a SQL_ID and shows details.
---Inside, it might query:
-
+```bash
 SQL>  SELECT sql_id, sql_text, executions, elapsed_time
       FROM v$sql
       WHERE sql_id = '&sql_id';
-
---Output example:
+```
+#Output example:
 
 SQL_ID        SQL_TEXT                          EXECUTIONS ELAPSED_TIME
 ----------    -------------------------------- ---------- ------------
 7g3kq9u1b2x1a SELECT * FROM employees WHERE...        12        0.05
 
 
---⚡ Summary
---@ac → runs a script that lists active sessions and their SQL_IDs.
---DEF → shows defined variables in SQL*Plus.
---@sql_id → runs a script to display details about a specific SQL_ID.
+#⚡ Summary
+#@ac → runs a script that lists active sessions and their SQL_IDs.
+#DEF → shows defined variables in SQL*Plus.
+#@sql_id → runs a script to display details about a specific SQL_ID.
 
 
---✅ So when you run them in sequence:
-  
+##✅ So when you run them in sequence:
+
+
 $ sqlplus system/password@ORCL
 SQL> @ac      → shows active sessions
 SQL> DEF      → shows defined variables
