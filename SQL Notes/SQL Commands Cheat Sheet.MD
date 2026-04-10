@@ -70,5 +70,17 @@ classDef orange fill:#ff9966,stroke:#333,stroke-width:2px;
 classDef red fill:#ff6666,stroke:#333,stroke-width:2px;
 
 
+SQL Command Categories Flow
+
+DDL ──► DML ──► DQL ──► DCL ──► TCL
+ |       |       |       |       |
+ |       |       |       |       └── Controls transactions (COMMIT, ROLLBACK)
+ |       |       |       └────────── Controls access (GRANT, REVOKE)
+ |       |       └────────────────── Queries data (SELECT)
+ |       └────────────────────────── Manipulates data (INSERT, UPDATE, DELETE, MERGE)
+ └────────────────────────────────── Defines schema (CREATE, ALTER, DROP, TRUNCATE)
+
+
+
 
 
