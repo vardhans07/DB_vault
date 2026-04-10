@@ -58,8 +58,10 @@ DEFINE _CONNECT_IDENTIFIER = "ORCL"
 ```bash
 SQL> @sql_id
 ```
-#This runs a script (often named sql_id.sql) that takes a SQL_ID and shows details.
-#Inside, it might query:
+
+This runs a script (often named sql_id.sql) that takes a SQL_ID and shows details.
+Inside, it might query:
+
 
 ```bash
 SQL>  SELECT sql_id, sql_text, executions, elapsed_time
