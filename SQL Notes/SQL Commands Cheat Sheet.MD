@@ -48,11 +48,23 @@
 
 ---
 
-✅ This structure makes your notes **easy to scan, attractive, and GitHub‑friendly**.  
-- Use **tables** for clarity.  
-- Use **code blocks** for syntax.  
-- Use **emojis or icons** for visual appeal.  
+```mermaid
+flowchart LR
+    DDL["DDL - Define Schema"] --> DML["DML - Manipulate Data"]
+    DML --> DQL["DQL - Query Data"]
+    DQL --> DCL["DCL - Control Access"]
+    DCL --> TCL["TCL - Control Transactions"]
 
----
+    DDL:::blue
+    DML:::green
+    DQL:::yellow
+    DCL:::orange
+    TCL:::red
 
-Would you like me to also create a **flowchart‑style Markdown section** (like a mini diagram of how DDL → DML → DQL → DCL → TCL fit together) so your notes look even more like a Jupyter notebook learning guide?
+classDef blue fill:#4da6ff,stroke:#333,stroke-width:2px;
+classDef green fill:#66cc66,stroke:#333,stroke-width:2px;
+classDef yellow fill:#ffcc00,stroke:#333,stroke-width:2px;
+classDef orange fill:#ff9966,stroke:#333,stroke-width:2px;
+classDef red fill:#ff6666,stroke:#333,stroke-width:2px;
+
+
