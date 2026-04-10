@@ -27,11 +27,12 @@ SQL>  SELECT sid, serial#, username, status, sql_id
 Output example:
 ====================================================
 
+```bash
 SID  SERIAL#  USERNAME   STATUS   SQL_ID
 ---  -------  --------   ------   ----------
  45     1234  HR         ACTIVE   7g3kq9u1b2x1a
  62     5678  SALES      INACTIVE 9h4m2kq8d7x3b
-
+```
 
 
 🛠 Step 3: Run DEF
@@ -43,11 +44,11 @@ SQL> DEF
 This shows all defined substitution variables in SQL*Plus.
 Example output:
 ====================================================
-
+```bash 
 DEFINE _DATE           = "10-APR-26"
 DEFINE _USER           = "SYSTEM"
 DEFINE _CONNECT_IDENTIFIER = "ORCL"
-
+```
 
 
 🛠 Step 4: Run @sql_id
@@ -66,11 +67,11 @@ SQL>  SELECT sql_id, sql_text, executions, elapsed_time
 ```
 Output example:
 ====================================================
-
+```bash
 SQL_ID        SQL_TEXT                          EXECUTIONS ELAPSED_TIME
 ----------    -------------------------------- ---------- ------------
 7g3kq9u1b2x1a SELECT * FROM employees WHERE...        12        0.05
-
+```
 
 ⚡ Summary
 ====================================================
