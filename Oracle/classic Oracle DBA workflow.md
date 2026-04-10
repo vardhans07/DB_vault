@@ -1,5 +1,6 @@
 
-###🛠 Step 1: Launch SQL*Plus
+##🛠 Step 1: Launch SQL*Plus
+====================================================
 
 ```bash
 
@@ -9,6 +10,7 @@ $ sqlplus system/password@ORCL
 
 
 ##🛠 Step 2: Run @ac
+====================================================
 
 ```bash
 SQL> @ac
@@ -23,6 +25,7 @@ SQL>  SELECT sid, serial#, username, status, sql_id
       WHERE username IS NOT NULL;
 ```
 #Output example:
+====================================================
 
 SID  SERIAL#  USERNAME   STATUS   SQL_ID
 ---  -------  --------   ------   ----------
@@ -32,6 +35,7 @@ SID  SERIAL#  USERNAME   STATUS   SQL_ID
 
 
 #🛠 Step 3: Run DEF
+====================================================
 
 ```bash
 SQL> DEF
@@ -46,6 +50,7 @@ DEFINE _CONNECT_IDENTIFIER = "ORCL"
 
 
 #🛠 Step 4: Run @sql_id
+====================================================
 
 ```bash
 SQL> @sql_id
@@ -59,6 +64,7 @@ SQL>  SELECT sql_id, sql_text, executions, elapsed_time
       WHERE sql_id = '&sql_id';
 ```
 #Output example:
+====================================================
 
 SQL_ID        SQL_TEXT                          EXECUTIONS ELAPSED_TIME
 ----------    -------------------------------- ---------- ------------
@@ -66,15 +72,18 @@ SQL_ID        SQL_TEXT                          EXECUTIONS ELAPSED_TIME
 
 
 #⚡ Summary
+====================================================
 #@ac → runs a script that lists active sessions and their SQL_IDs.
 #DEF → shows defined variables in SQL*Plus.
 #@sql_id → runs a script to display details about a specific SQL_ID.
 
 
 ##✅ So when you run them in sequence:
+====================================================
 
 
 $ sqlplus system/password@ORCL
+====================================================
 SQL> @ac      → shows active sessions
 SQL> DEF      → shows defined variables
 SQL> @sql_id  → shows details of a query by SQL_ID
