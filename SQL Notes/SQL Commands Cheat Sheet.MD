@@ -50,6 +50,7 @@
 
 
 
+```markdown
 ```mermaid
 flowchart LR
     DDL["**DDL - Define Schema**"] --> DML["**DML - Manipulate Data**"]
@@ -57,17 +58,8 @@ flowchart LR
     DQL --> DCL["**DCL - Control Access**"]
     DCL --> TCL["**TCL - Control Transactions**"]
 
-    DDL:::blue
-    DML:::green
-    DQL:::yellow
-    DCL:::orange
-    TCL:::red
-
-classDef blue fill:#4da6ff,stroke:#333,stroke-width:2px;
-classDef green fill:#66cc66,stroke:#333,stroke-width:2px;
-classDef yellow fill:#ffcc00,stroke:#333,stroke-width:2px;
-classDef orange fill:#ff9966,stroke:#333,stroke-width:2px;
-classDef red fill:#ff6666,stroke:#333,stroke-width:2px;
+classDef plain fill:#ffffff,stroke:#000000,stroke-width:1px;
+class DDL,DML,DQL,DCL,TCL plain;
 
 
 
