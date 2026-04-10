@@ -52,10 +52,10 @@
 
 ```mermaid
 flowchart LR
-    DDL["DDL - Define Schema"] --> DML["DML - Manipulate Data"]
-    DML --> DQL["DQL - Query Data"]
-    DQL --> DCL["DCL - Control Access"]
-    DCL --> TCL["TCL - Control Transactions"]
+    DDL["**DDL - Define Schema**"] --> DML["**DML - Manipulate Data**"]
+    DML --> DQL["**DQL - Query Data**"]
+    DQL --> DCL["**DCL - Control Access**"]
+    DCL --> TCL["**TCL - Control Transactions**"]
 
     DDL:::blue
     DML:::green
@@ -70,15 +70,8 @@ classDef orange fill:#ff9966,stroke:#333,stroke-width:2px;
 classDef red fill:#ff6666,stroke:#333,stroke-width:2px;
 
 
-SQL Command Categories Flow
 
-DDL ──► DML ──► DQL ──► DCL ──► TCL
- |       |       |       |       |
- |       |       |       |       └── Controls transactions (COMMIT, ROLLBACK)
- |       |       |       └────────── Controls access (GRANT, REVOKE)
- |       |       └────────────────── Queries data (SELECT)
- |       └────────────────────────── Manipulates data (INSERT, UPDATE, DELETE, MERGE)
- └────────────────────────────────── Defines schema (CREATE, ALTER, DROP, TRUNCATE)
+
 
 
 
