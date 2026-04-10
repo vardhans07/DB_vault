@@ -42,6 +42,7 @@ SID  SERIAL#  USERNAME   STATUS   SQL_ID
 SQL> DEF
 ```
 This shows all defined substitution variables in SQL*Plus.
+
 Example output:
 ====================================================
 ```bash 
