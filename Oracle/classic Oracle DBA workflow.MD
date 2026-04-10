@@ -8,10 +8,11 @@ $ sqlplus system/password@ORCL
 ##You’ll get the SQL> prompt inside SQL*Plus.
 
 
-  --🛠 Step 2: Run @ac
+##🛠 Step 2: Run @ac
 
+```bash
 SQL> @ac
-
+```
 --This runs the script file ac.sql.
 --Typically, DBAs name ac.sql as “Active Sessions” script.
 --Inside it, you might see queries like:
