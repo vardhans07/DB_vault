@@ -1,5 +1,5 @@
 
-##🛠 Step 1: Launch SQL*Plus
+#🛠 Step 1: Launch SQL*Plus
 
 ```bash
 
