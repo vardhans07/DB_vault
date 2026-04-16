@@ -6,19 +6,31 @@ Go to GitHub → click **New Repository** → name it (e.g., `frontend-app`) →
 ## 2. Initialize Git locally and connect to GitHub
 ```bash
 cd my-frontend-project          # go into your project folder
+```
+
+```bash
 git init                        # initialize Git
+```
+
+```bash
 git remote add origin https://github.com/username/frontend-app.git
 ```
 
 ## 3. Add and commit all frontend files
 ```bash
 git add .                       # stage all files
+```
+
+```bash
 git commit -m "Initial commit with frontend files"
 ```
 
 ## 4. Push to GitHub main branch
 ```bash
 git branch -M main              # rename branch to main
+```
+
+```bash
 git push -u origin main         # push code to GitHub
 ```
 
@@ -33,6 +45,9 @@ git checkout -b feature-update-ui
 ## 7. Stage and commit changes in the new branch
 ```bash
 git add .
+```
+
+```bash
 git commit -m "Updated UI components"
 ```
 
@@ -54,5 +69,8 @@ Once approved, click **Merge Pull Request** → confirm merge into main.
 ## 11. Update local main branch
 ```bash
 git checkout main
+```
+
+```bash
 git pull origin main
 ```
