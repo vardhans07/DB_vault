@@ -1,80 +1,9 @@
-
 🛠 Step 1: Launch SQL*Plus
 ====================================================
 
 ```bash
 
-$ sqlplus system/password@ORCL🛠 Git/GitHub Workflow: Create Repo → Push Frontend Files → New Branch → Pull Request → Merge
-Step 1: Create a new repository on GitHub
-====================================================
-Go to GitHub → Click New repository → Name it (e.g., frontend-app) → Click Create repository.
-
-Step 2: Initialize Git locally and connect to GitHub
-====================================================
-Bashcd my-frontend-project          # Navigate to your project folder
-git init                        # Initialize a new Git repository
-git remote add origin https://github.com/username/frontend-app.git
-
-Step 3: Add and commit all frontend files
-====================================================
-Bashgit add .                       # Stage all files
-git commit -m "Initial commit with frontend files"
-
-Step 4: Push to GitHub main branch
-====================================================
-Bashgit branch -M main              # Rename default branch to main
-git push -u origin main         # Push code to GitHub and set upstream
-
-Step 5: Make changes locally
-====================================================
-Edit your frontend files (e.g., update UI components, fix bugs, add features).
-
-Step 6: Create a new branch for your changes
-====================================================
-Bashgit checkout -b feature-update-ui
-
-Step 7: Stage and commit changes in the new branch
-====================================================
-Bashgit add .
-git commit -m "Updated UI components"
-
-Step 8: Push the new branch to GitHub
-====================================================
-Bashgit push origin feature-update-ui
-
-Step 9: Open a Pull Request (PR) on GitHub
-====================================================
-Go to your repository on GitHub.
-You will see a prompt to create a Pull Request for the feature-update-ui branch.
-Click Compare & pull request → Add a clear description of your changes → Click Create pull request.
-
-Step 10: Review and Merge the Pull Request
-====================================================
-
-Team members (or you) review the changes in the Pull Request.
-Once approved, click Merge pull request → Confirm the merge into the main branch.
-
-
-Step 11: Update your local main branch
-====================================================
-Bashgit checkout main
-git pull origin main            # Pull the latest changes from GitHub
-
-⚡ Summary
-====================================================
-Bash1. Create repo on GitHub
-2. git init + remote add origin
-3. git add . + git commit
-4. git branch -M main + git push -u origin main
-5. Make changes locally
-6. git checkout -b feature-update-ui
-7. git add . + git commit
-8. git push origin feature-update-ui
-9. Create Pull Request on GitHub
-10. Review & Merge PR
-11. git checkout main + git pull origin main
-
-✅ Recommended Workflow:
+$ sqlplus system/password@ORCL
 ```
 You’ll get the SQL> prompt inside SQL*Plus.
 
@@ -169,6 +98,3 @@ SQL> DEF      → shows defined variables
 ```bash
  SQL> @sql_id  → shows details of a query by SQL_ID
 ```
-
-
-
