@@ -1,0 +1,40 @@
+📘 Git Commands & Their Purpose
+git branch  
+Lists all local branches. Example: shows feature-login and feature-update-ui_2.
+
+git status  
+Displays current branch, sync status with remote, and modified files not staged.
+
+git add .  
+Stages all changes in the working directory for the next commit.
+
+git commit -m "message"  
+Records staged changes into branch history with a descriptive message.
+
+git checkout main  
+Switches to the main branch. Failed initially because no local main existed.
+
+git remote show origin  
+Shows details of the remote repository (origin), including fetch/push URLs and tracked branches.
+
+git checkout -b main origin/main  
+Creates a new local main branch based on the remote origin/main and sets tracking. Solved the error when main didn’t exist locally.
+
+git fetch origin  
+Updates local knowledge of remote branches without merging. Used before creating or checking out branches.
+
+git merge feature-update-ui_2  
+Merges changes from your feature branch into main, ensuring updates are included in the central branch.
+
+git push origin main  
+Uploads your local main branch (with merged changes) to the remote repository.
+
+git config user.name / user.email  
+Sets or shows the identity used for commits. Must match your GitHub account (vardhans07) so commits are attributed correctly.
+
+example 
+
+git config user.name "vardhans07"
+
+gh auth login  
+Authenticates GitHub CLI with your GitHub account. You logged in as vardhans07, which controls push/pull access.
