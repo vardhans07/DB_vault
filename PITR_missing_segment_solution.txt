@@ -1,0 +1,71 @@
+🛠 Step 1: Create a test database and table
+
+-- Create a test database
+CREATE DATABASE demo;
+
+-- Connect to it
+\c demo
+
+-- Create a table
+CREATE TABLE employees (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL,
+    joined DATE DEFAULT CURRENT_DATE
+);
+
+-- Insert sample data
+INSERT INTO employees (name, role) VALUES
+('Alice', 'Developer'),
+('Bob', 'SysAdmin'),
+('Charlie', 'DBA');
+
+-- Verify
+SELECT * FROM employees;
+
+
+🛠 Step 4: Simulate changes and “accidental delete”
+
+-- Add more data
+INSERT INTO employees (name, role) VALUES ('David', 'Intern');
+
+-- Delete a row
+DELETE FROM employees WHERE name = 'Alice';
+
+-- Verify
+SELECT * FROM employees;
+
+🛠 Fix the permissions
+
+# Ensure ownership
+sudo chown -R postgres:postgres /var/lib/postgresql/16/main
+
+# Fix directory permissions
+sudo chmod 0700 /var/lib/postgresql/16/main
+
+# Also fix the archive directory (recommended)
+sudo chmod 0750 /var/lib/postgresql/16/archive
+
+
+#Ensure no other PostgreSQL is using 5432:
+sudo ss -ltnp | grep 5432 || sudo lsof -i :5432
+
+#If you see another PID listening, stop it:
+sudo kill -9 <PID>
+
+
+
+#Look for the missing segment in the old data dir (you moved it to main_old):
+ls -l /var/lib/postgresql/16/main_old/pg_wal
+
+#If you find files like 000000010000000000000005, copy them into your archive directory:
+sudo cp /var/lib/postgresql/16/main_old/pg_wal/000000010000000000000005 \
+        /var/lib/postgresql/16/archive/
+
+
+# Option C: Recover to end of available WAL (no specific time)
+sudo sed -i '/^recovery_target_time/d' /etc/postgresql/16/main/postgresql.conf
+# Ensure:
+recovery_target_action = 'promote'
+recovery_target_timeline = 'latest'
+restore_command = 'cp /var/lib/postgresql/16/archive/%f %p'
