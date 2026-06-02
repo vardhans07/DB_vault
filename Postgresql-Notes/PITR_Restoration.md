@@ -141,6 +141,13 @@ sudo -u postgres psql
 SELECT * FROM employees;
 ```
 
+✅ Best Practice
+After confirming that recovery has succeeded and your database is back online, you can safely delete the recovery.signal file.
+This prevents PostgreSQL from trying to re-enter recovery mode on the next restart.
+
+```bash
+sudo -u postgres rm /var/lib/postgresql/16/main/recovery.signal
+```
 
 
 
