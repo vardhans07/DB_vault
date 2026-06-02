@@ -1,113 +1,103 @@
-🔑 How recovery_target_time works
-PostgreSQL replays WAL (write‑ahead logs) from your base backup until it reaches the timestamp you specify.
+# PostgreSQL Point-in-Time Recovery (PITR) Demo
 
-If the timestamp is before a DELETE, the DELETE never happens (row is preserved).
+This demo shows how `recovery_target_time` works: PostgreSQL replays WAL logs until the specified timestamp.  
 
-If the timestamp is after a DELETE, the DELETE is included (row is gone).
+- If the timestamp is **before a DELETE**, the row is preserved.  
+- If the timestamp is **after a DELETE**, the row is gone.  
+- If the timestamp is **between INSERT and DELETE**, you’ll see the INSERT but not the DELETE.  
 
-If the timestamp is between INSERT and DELETE, you’ll see the INSERT but not the DELETE.
+👉 The trick is to capture the exact time right before the unwanted action and use that as `recovery_target_time`.
 
-So the trick is: capture the exact time right before the unwanted action and use that as recovery_target_time.
+---
 
+## 1. Create Database and Table
 
-
-🛠 Step‑by‑Step PITR Demo (with demo1):
-
-# 1. Create new table and insert rows :
 ```bash
-
 sudo -u postgres psql
 ```
-#create table :
-```bash
 
+```bash
 CREATE DATABASE demo1;
-```
-```bash
 \c demo1
-```
-```bash
+
 CREATE TABLE employees (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     role TEXT NOT NULL,
     joined DATE DEFAULT CURRENT_DATE
 );
-```
-```bash
+
 INSERT INTO employees (name, role) VALUES
 ('Alice', 'Developer'),
 ('Bob', 'SysAdmin'),
 ('Charlie', 'DBA');
-```
-```bash
+
 SELECT * FROM employees;
-```
-```bash
 \q
-
 ```
 
-# 2. Take a base backup :
+
+2. Take Base Backup
 
 ```bash
+
 sudo -u postgres mkdir -p /var/lib/postgresql/16/basebackup_demo1
-```
-```bash
 sudo -u postgres pg_basebackup -D /var/lib/postgresql/16/basebackup_demo1 -Fp -Xs -P
+
+
 ```
 
-
-
-#3. Make changes and capture timestamp :
+3. Make Changes and Capture Timestamp
 
 ```bash
 sudo -u postgres psql
-```
-```bash
 \c demo1
+
 ```
--- Add a new row
 
 ```bash
+-- Add a new row
 INSERT INTO employees (name, role) VALUES ('David', 'Intern');
 ```
+
 -- Capture timestamp BEFORE delete
 ```bash
 SELECT now();
+
 ```
-👉 Copy this timestamp (e.g. 2025-11-27 19:40:00). This is your recovery_target_time.:
+👉 Copy this timestamp (e.g. 2025-11-27 19:40:00) — this will be your recovery_target_time.
+
+
 
 -- Simulate accidental delete
 
-```bash
+```bash 
 DELETE FROM employees WHERE name = 'Alice';
-```
-```bash
 SELECT * FROM employees;
-```
-```bash
 \q
 ```
-#4. Configure recovery :
+4. Configure Recovery
 
->> Edit /etc/postgresql/16/main/postgresql.conf:
+Edit /etc/postgresql/16/main/postgresql.conf:
+
 
 ```bash
+
 restore_command = 'cp /var/lib/postgresql/16/archive/%f %p'
 recovery_target_time = '2025-11-27 19:40:00'
 recovery_target_action = 'promote'
 recovery_target_timeline = 'latest'
+
 ```
 
-
-#Create recovery signal:
+Create recovery signal:
 
 ```bash
 sudo -u postgres touch /var/lib/postgresql/16/main/recovery.signal
+
 ```
 
-# 5. Restore base backup
+5. Restore Base Backup
 
 ```bash
 sudo systemctl stop postgresql
@@ -127,33 +117,29 @@ sudo chmod 0700 /var/lib/postgresql/16/main
 ```bash
 sudo systemctl start postgresql
 ```
+```
+6. Verify Recovery
 
-#6. Verify recovery (Check logs) :
+Check logs:
+
 ```bash
-
 sudo tail -f /var/log/postgresql/postgresql-16-main.log
 
 ```
-#You should see WAL replay until the target time.Connect and check:
+
+Connect and verify:
 
 ```bash
+
 sudo -u postgres psql
 ```
 ```bash
 \c demo1
 ```
 ```bash
+
 SELECT * FROM employees;
 ```
-
-
-👉 The key difference this time: use the timestamp from SELECT now() right before the DELETE as recovery_target_time. 
-That guarantees PITR stops before the unwanted action.
-
-
-
-
-
 
 
 
