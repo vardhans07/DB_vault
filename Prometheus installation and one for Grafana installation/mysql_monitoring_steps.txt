@@ -1,0 +1,23 @@
+# MySQL Monitoring Setup with Prometheus + mysqld_exporter
+
+# 1. Go to mysqld_exporter directory
+cd /root/mysqld_exporter-0.15.0.linux-amd64
+
+# 2. Kill old exporter if running
+pkill -f mysqld_exporter
+
+# 3. Create MySQL user for Prometheus
+mysql -u root -p
+CREATE USER 'prometheus'@'localhost' IDENTIFIED BY 'amol@123';
+GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'prometheus'@'localhost';
+FLUSH PRIVILEGES;
+
+# 4. Export data source
+export DATA_SOURCE_NAME="prometheus:amol@123@(localhost:3306)/"
+
+# 5. Start exporter
+nohup ./mysqld_exporter --web.listen-address=":9104" > exporter.log 2>&1 &
+
+# 6. Verify
+netstat -tulnp | grep 9104
+curl http://localhost:9104/metrics | head -20
