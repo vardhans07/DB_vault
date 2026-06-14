@@ -1,0 +1,17 @@
+# Prometheus Setup
+
+# 1. Go to Prometheus directory
+cd /root/prometheus-2.52.0.linux-amd64
+
+# 2. Kill old Prometheus if running
+pkill prometheus
+
+# 3. Start Prometheus
+nohup ./prometheus --config.file=prometheus.yml > prometheus.log 2>&1 &
+
+# 4. Verify
+tail -n 50 prometheus.log
+netstat -tulnp | grep 9090
+
+# 5. Access Prometheus UI
+http://localhost:9090
