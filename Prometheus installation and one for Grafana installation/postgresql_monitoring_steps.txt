@@ -1,0 +1,19 @@
+# PostgreSQL Monitoring Setup with Prometheus + postgres_exporter
+
+# 1. Go to postgres_exporter directory
+cd /root/postgres_exporter-0.15.0.linux-amd64
+
+# 2. Kill old exporter if running
+pkill -f postgres_exporter
+
+# 3. Export data source
+export DATA_SOURCE_NAME="postgresql://postgres:amol@123@localhost:5432/postgres?sslmode=disable"
+
+# 4. Start exporter (default collectors only)
+nohup ./postgres_exporter \
+  --disable-settings-metrics \
+  --web.listen-address=":9187" > exporter.log 2>&1 &
+
+# 5. Verify
+netstat -tulnp | grep 9187
+curl http://localhost:9187/metrics | head -20
