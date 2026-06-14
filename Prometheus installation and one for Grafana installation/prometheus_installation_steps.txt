@@ -1,0 +1,30 @@
+# Prometheus Installation & Setup
+
+# 1. Extract Prometheus tarball
+tar -xvf prometheus-2.52.0.linux-amd64.tar.gz -C /root/
+
+# 2. Go to Prometheus directory
+cd /root/prometheus-2.52.0.linux-amd64
+
+# 3. Configuration file created:
+# /root/prometheus-2.52.0.linux-amd64/prometheus.yml
+# Example scrape config for PostgreSQL & MySQL exporters:
+# scrape_configs:
+#   - job_name: 'postgresql'
+#     static_configs:
+#       - targets: ['localhost:9187']
+#   - job_name: 'mysql'
+#     static_configs:
+#       - targets: ['localhost:9104']
+
+# 4. Kill old Prometheus if running
+pkill prometheus
+
+# 5. Start Prometheus
+nohup ./prometheus --config.file=prometheus.yml > prometheus.log 2>&1 &
+
+# 6. Verify logs
+tail -n 50 prometheus.log
+
+# 7. Access Prometheus UI
+http://localhost:9090
