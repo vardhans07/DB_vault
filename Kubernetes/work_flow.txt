@@ -1,0 +1,133 @@
+Update 1: The Node & Pod Layout (Physical Distribution)The primary and replica databases are now isolated on 
+entirely separate, heavy-duty Database Nodes across different Availability Zones (Data Centers).
+
+
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ KUBERNETES CLUSTER (SBI INSURANCE PLATFORM)                                                                           │
+│                                                                                                                       │
+│  ┌──────────────────────────────────────┐            ┌──────────────────────────────────────┐                         │
+│  │ NODE 1 (PC 1 - Application Server)   │            │ NODE 2 (PC 2 - Application Server)   │                         │
+│  │ Hardware: 4 CPUs, 8GB RAM            │            │ Hardware: 4 CPUs, 8GB RAM            │                         │
+│  │                                      │            │                                      │                         │
+│  │  ┌────────────────────────────────┐  │            │  ┌────────────────────────────────┐  │                         │
+│  │  │ POD A: API Gateway             │  │            │  │ POD D: Motor Insurance         │  │                         │
+│  │  │ (Docker Image: sbi-gateway:v1) │  │            │  │ (Docker Image: sbi-motor:v1)   │  │                         │
+│  │  └───────────────┬────────────────┘  │            │  └────────────────────────────────┘  │                         │
+│  │                  │                   │            │                                      │                         │
+│  │  ┌───────────────▼────────────────┐  │            │  ┌────────────────────────────────┐  │                         │
+│  │  │ POD B: Health Insurance        │  │            │  │ POD E: Health Insurance        │  │                         │
+│  │  │ (Docker Image: sbi-health:v1)  │  │            │  │ (Docker Image: sbi-health:v1)  │  │                         │
+│  │  └────────────────────────────────┘  │            │  └────────────────────────────────┘  │                         │
+│  │                                      │            │                                      │                         │
+│  │  ┌────────────────────────────────┐  │            │  ┌────────────────────────────────┐  │                         │
+│  │  │ POD C: Redis Caching           │  │            │  │ POD F: Motor Insurance         │  │                         │
+│  │  │ (Docker Image: redis:7)        │  │            │  │ (Docker Image: sbi-motor:v1)   │  │                         │
+│  │  └────────────────────────────────┘  │            │  └────────────────────────────────┘  │                         │
+│  └──────────────────────────────────────┘            └──────────────────────────────────────┘                         │
+│                                                                                                                       │
+│                                                                                                                       │
+│                      ┌────────────────────────────────────────────────────────────────────────┐                       │
+│                      │ NODE 3 (PC 3 - Heavy Database Server)                                  │                       │
+│                      │ Hardware: 16 CPUs, 64GB RAM                                            │                       │
+│                      │                                                                        │                       │
+│                      │  ┌──────────────────────────────────────────────────────────────────┐  │                       │
+│                      │  │ POD G: Core Insurance Database (StatefulSet)                     │  │                       │
+│                      │  │ (Docker Image: postgres:15)                                      │  │                       │
+│                      │  └────────────────────────────────┬─────────────────────────────────┘  │                       │
+│                      │                                   │                                    │                       │
+│                      └───────────────────────────────────┼────────────────────────────────────┘                       │
+│                                                          │ (Saves actual financial tables here)                               │
+│                                                          ▼                                                            │
+│                      ┌────────────────────────────────────────────────────────────────────────┐                       │
+│                      │ PHYSICAL DATABASE HARD DISK (1 Terabyte High-Speed NVMe SSD)           │                       │
+│                      │ (Kubernetes Persistent Volume - Tied strictly to PC 3)                 │                       │
+│                      └────────────────────────────────────────────────────────────────────────┘                       │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+
+
+Update 2: The End-to-End Traffic Architecture (Network Flow)This layout incorporates the dedicated Primary/Replica database 
+separation. It also introduces a Redis Caching Pod to fetch policy premium details 
+instantly without putting a heavy load on the database.
+
+[ Public Internet Traffic (SBI Customers) ]
+                                       │
+                                       ▼
+                         ┌───────────────────────────┐
+                         │     Web Application       │ (Edge Security: Blocks Malicious
+                         │    Firewall & Ingress     │  SQL Injection & DDoS)
+                         └─────────────┬─────────────┘
+                                       │
+                                       ▼
+                         ┌───────────────────────────┐
+                         │    API Gateway Pods       │ (Secures traffic via JWT tokens 
+                         └─────────────┬─────────────┘  and enforces Rate Limiting)
+                                       │
+     ┌─────────────────┼─────────────────┼─────────────────┐ (Cluster Routing Layer)
+     ▼                 ▼                 ▼                 ▼
+┌──────────┐      ┌──────────┐      ┌──────────┐      ┌──────────┐
+│  Health  │      │  Motor   │      │   Home   │      │ Product  │
+│  Ins.    │      │  (Car/   │      │   Ins.   │      │  Ins.    │
+│  Pods    │      │  Bike)   │      │   Pods   │      │  Pods    │
+└────┬─────┘      └───┬──────┘      ────┬─────┘      ────┬─────┘
+     │                │                 │                 │
+     └────────────────┼─────────────────┼─────────────────┘
+                      │
+                      ├────────────────────────────────────────┐
+                      ▼ (Write Traffic Only)                   ▼ (Read / Search Traffic)
+         ┌───────────────────────────┐            ┌───────────────────────────┐
+         │ POD: Primary Database     │            │ POD: Read-Replica DB      │
+         │ - PostgreSQL StatefulSet  │            │ - PostgreSQL StatefulSet  │
+         └────────────┬──────────────┘            └────────────┬──────────────┘
+                      │                                        │
+                      ▼                                        ▼
+         ┌───────────────────────────┐            ┌───────────────────────────┐
+         │ Encrypted Block Storage   │            │ Encrypted Block Storage   │
+         │ (PVC - Zone A)            │            │ (PVC - Zone B)            │
+         └───────────────────────────┘            └───────────────────────────┘
+		 
+		 
+		 
+
+
+┌──────────────────────────────────────────────────────────┐
+│ NODE (A real server / VM with 8GB RAM and 4 CPUs)       │
+│                                                          │
+│   ┌──────────────────────────────────────────────────┐   │
+│   │ POD (The Kubernetes wrapper / network box)       │   │
+│   │                                                  │   │
+│   │   ┌──────────────────────────────────────────┐   │   │
+│   │   │ RUNNING DOCKER CONTAINER                 │   │   │
+│   │   │ (Turned on using your Docker Image file) │   │   │
+│   │   └──────────────────────────────────────────┘   │   │
+│   └──────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────┘
+
+
+┌────────────────────────────────────────────────────────┐
+│ NODE 1 (PC 1 - Single Server)                          │
+│                                                        │
+│  ┌────────────────────┐        ┌────────────────────┐  │
+│  │ POD 1: Database    │        │ POD 2: Application │  │
+│  │ (Docker Container) │        │ (Docker Container) │  │
+│  └─────────┬──────────┘        └────────────────────┘  │
+│            ▼                                           │
+│  ┌────────────────────┐                                │
+│  │ Database Disk File │                                │
+│  └────────────────────┘                                │
+└────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────┐        ┌──────────────────────────────┐
+│ NODE 1 (PC 1)                │        │ NODE 2 (PC 2)                │
+│                               │        │                              │
+│  ┌────────────────────┐      │        │  ┌────────────────────┐      │
+│  │ POD 2: Application │      │        │  │ POD 1: Database    │      │
+│  │ (Docker Container) │      │        │  │ (Docker Container) │      │
+│  └────────────────────┘      │        │  └─────────┬──────────┘      │
+│                              │        │            ▼                 │
+│                              │        │  ┌────────────────────┐      │
+│                              │        │  │ Physical DB Disk   │      │
+│                              │        │  └────────────────────┘      │
+└──────────────────────────────┘        └──────────────────────────────┘
