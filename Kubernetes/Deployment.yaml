@@ -1,0 +1,84 @@
+The Behind-the-Scenes Traffic Flow (How Zero-Downtime Works)Explain the step-by-step dance that happens 
+across your 3 Nodes during the process:
+
+# maxSurge: This setting tells Kubernetes how many extra pods it can create over your normal count during an upgrade
+ (e.g., maxSurge: 1 means create 1 new pod before killing an old one).
+
+# maxUnavailable: This specifies the maximum number of pods that can be taken down simultaneously during 
+ the update process (set this to 0 to guarantee absolute zero downtime).
+
+
+[ Step 1: Normal State ]     [ Step 2: New Pod Spins Up ]  [ Step 3: Rolling Swap Over ]
+┌─────────────────────────┐   ┌─────────────────────────┐   ┌─────────────────────────┐
+│ Node 1:  [ Pod v1 ]     │   │ Node 1:  [ Pod v1 ]     │   │ Node 1:  [ Pod v2 ]     │
+│ Node 2:  [ Pod v1 ]     │   │ Node 2:  [ Pod v1 ]     │   │ Node 2:  [ Pod v1 ]     │
+│ Node 3:  (Empty Space)  │   │ Node 3:  [ Pod v2 ] ◄───┼───┼─ New v2 boots up here   │
+└─────────────────────────┘   └─────────────────────────┘   └─────────────────────────┘
+   (100% Traffic to v1)         (Traffic sent ONLY to v1     (Old Pod v1 on Node 1 is
+                                 until v2 passes health checks) safely terminated)
+								 
+								 
+The Scheduler Finds Space: The Master controller checks your 3 nodes. It sees Node 3 has free capacity, 
+so it downloads your new v2 Docker image and launches a v2 Pod right there.
+
+The Readiness Probe (Critical for Zero Downtime): The network load balancer does not send user traffic to this new 
+v2 Pod immediately. It waits for the Pod's Readiness Probe (a health check rule you write in the code) 
+to return a success status.
+
+ This ensures the app is fully initialized and ready.Traffic Shifting: 
+Once the v2 Pod is confirmed healthy, the network routing layer instantly starts sending user traffic 
+to it.Graceful Termination: Only after the new pod takes traffic does Kubernetes send a termination 
+signal (SIGTERM) to one of the old v1 Pods on Node 1.
+
+ The old pod gets roughly 30 seconds to finish 
+processing its current user requests before it gracefully closes down.Cycle Repeats: Kubernetes then 
+repeats this process for the remaining v1 Pod on Node 2 until the upgrade is complete
+
+
+
+
+The Production Deployment YAML File
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sbi-health-app
+  namespace: sbi-insurance
+spec:
+  replicas: 2                     # Tells Kubernetes to always keep 2 identical copies running
+  selector:
+    matchLabels:
+      app: sbi-health             # How this deployment tracks its own pods
+  
+  # 1. CRITICAL BLOCK FOR ZERO DOWNTIME
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1                 # Allows Kubernetes to temporarily spin up 1 extra pod (v2) before killing v1
+      maxUnavailable: 0           # Enforces that 0 pods can be offline. Both v1 pods stay alive until v2 is up!
+
+  template:
+    metadata:
+      labels:
+        app: sbi-health           # Labels applied to the running pods
+    spec:
+      containers:
+      - name: health-container
+        image: sbi-health-app:v1  # Your current Docker image blueprint
+        ports:
+        - containerPort: 8080     # The port your application code listens on
+        
+        # 2. CRITICAL HEALTH CHECKS
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health   # A simple route in your code that returns 200 OK when the app is ready
+            port: 8080
+          initialDelaySeconds: 10 # Wait 10 seconds after boot before checking (letting the server warm up)
+          periodSeconds: 5        # Check every 5 seconds
+          successThreshold: 1     # Needs 1 success to be considered fully alive
+          failureThreshold: 3     # If it fails 3 times, do not send traffic to it
+
+        # 3. STORAGE LOG SAFEGUARDS (For your 10 GB machine)
+        resources:
+          limits:
+            ephemeral-storage: "500Mi" # Prevents this container from eating up your small disk space
