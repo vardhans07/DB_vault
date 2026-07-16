@@ -1,3 +1,10 @@
+Step 1: The Core Concept (The Rolling Update Strategy)Explain that Kubernetes achieves zero-downtime updates using 
+a Rolling Update strategy.Instead of killing all your old Application Pods at the same time (which causes a blackout)
+,Kubernetes takes a phased approach: it spins up one single 
+new Pod (running the upgraded Docker image) first, 
+waits for it to become healthy, and only then destroys one old Pod. It repeats this cycle until all pods are upgraded.
+
+
 The Behind-the-Scenes Traffic Flow (How Zero-Downtime Works)Explain the step-by-step dance that happens 
 across your 3 Nodes during the process:
 
@@ -37,48 +44,4 @@ repeats this process for the remaining v1 Pod on Node 2 until the upgrade is com
 
 
 
-The Production Deployment YAML File
 
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: sbi-health-app
-  namespace: sbi-insurance
-spec:
-  replicas: 2                     # Tells Kubernetes to always keep 2 identical copies running
-  selector:
-    matchLabels:
-      app: sbi-health             # How this deployment tracks its own pods
-  
-  # 1. CRITICAL BLOCK FOR ZERO DOWNTIME
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1                 # Allows Kubernetes to temporarily spin up 1 extra pod (v2) before killing v1
-      maxUnavailable: 0           # Enforces that 0 pods can be offline. Both v1 pods stay alive until v2 is up!
-
-  template:
-    metadata:
-      labels:
-        app: sbi-health           # Labels applied to the running pods
-    spec:
-      containers:
-      - name: health-container
-        image: sbi-health-app:v1  # Your current Docker image blueprint
-        ports:
-        - containerPort: 8080     # The port your application code listens on
-        
-        # 2. CRITICAL HEALTH CHECKS
-        readinessProbe:
-          httpGet:
-            path: /api/v1/health   # A simple route in your code that returns 200 OK when the app is ready
-            port: 8080
-          initialDelaySeconds: 10 # Wait 10 seconds after boot before checking (letting the server warm up)
-          periodSeconds: 5        # Check every 5 seconds
-          successThreshold: 1     # Needs 1 success to be considered fully alive
-          failureThreshold: 3     # If it fails 3 times, do not send traffic to it
-
-        # 3. STORAGE LOG SAFEGUARDS (For your 10 GB machine)
-        resources:
-          limits:
-            ephemeral-storage: "500Mi" # Prevents this container from eating up your small disk space
